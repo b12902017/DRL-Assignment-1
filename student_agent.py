@@ -32,6 +32,15 @@ def get_state(obs, memory):
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
 
+    if memory.get("previous_action") == 4 and phase == 0:
+        for station in stations:
+            if (taxi_row, taxi_col) == station:
+                picked.add(station)
+    if memory.get("previous_action") == 5 and phase == 1:
+        for station in stations:
+            if (taxi_row, taxi_col) == station:
+                picked.add(station)
+
     for s in stations:
         if s in picked or (phase == 1 and s in dropped):
             continue
@@ -88,13 +97,18 @@ def get_action(obs):
             "picked_stations": set(),
             "dropped_stations": set(),
             "stations": stations,
+            "previous_action": None,
         }
 
     memory = get_action.memory
     state = get_state(obs, memory)
 
     if state in q_table:
-        return int(np.argmax(q_table[state]))
-    return random.choice(range(6))
+        action = int(np.argmax(q_table[state]))
+    else:
+        action = random.choice(range(6))
+
+    memory["previous_action"] = action
+    return action
     # return random.choice([0, 1, 2, 3, 4, 5]) # Choose a random action
     # You can submit this random agent to evaluate the performance of a purely random strategy.

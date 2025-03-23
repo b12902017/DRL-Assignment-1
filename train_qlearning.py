@@ -4,12 +4,12 @@ from simple_custom_taxi_env import SimpleTaxiEnv
 import pickle
 
 # Training parameters
-episodes = 20000
+episodes = 40000
 alpha = 0.1
 gamma = 0.99
 epsilon = 1.0
 epsilon_end = 0.05
-decay_rate = 0.9999
+decay_rate = 0.99995
 
 env = SimpleTaxiEnv()
 q_table = {}
@@ -33,6 +33,15 @@ def get_state(obs, memory):
     dropped = memory.get("dropped_stations", set())
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
+
+    if memory.get("previous_action") == 4 and phase == 0:
+        for station in stations:
+            if (taxi_row, taxi_col) == station:
+                picked.add(station)
+    if memory.get("previous_action") == 5 and phase == 1:
+        for station in stations:
+            if (taxi_row, taxi_col) == station:
+                picked.add(station)
 
     for s in stations:
         if s in picked or (phase == 1 and s in dropped):
@@ -73,6 +82,10 @@ def get_state(obs, memory):
     return state
 
 
+def manhattan(pos1, pos2):
+    return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+
+
 for episode in range(episodes):
     obs, _ = env.reset()
     station_coords = obs[2:10]
@@ -83,12 +96,17 @@ for episode in range(episodes):
         "picked_stations": set(),
         "dropped_stations": set(),
         "stations": stations,
+        "previous_action": None,
     }
 
     state = get_state(obs, memory)
     done = False
     total_reward = 0
     steps = 0
+
+    taxi_pos = (obs[0], obs[1])
+    prev_picked_len = 0
+    prev_dropped_len = 0
 
     while not done:
         if state not in q_table:
@@ -100,12 +118,43 @@ for episode in range(episodes):
             action = int(np.argmax(q_table[state]))
 
         obs, reward, done, _ = env.step(action)
+        memory["previous_action"] = action
         next_state = get_state(obs, memory)
 
         shaped_reward = 0
 
         if action == 4 and reward > -1:
             shaped_reward += 10
+
+        new_taxi_pos = (obs[0], obs[1])
+        current_targets = [
+            s
+            for s in stations
+            if (
+                s not in memory["picked_stations"]
+                if memory["phase"] == 0
+                else s not in memory["dropped_stations"]
+            )
+        ]
+
+        """
+        if current_targets:
+            old_dists = [manhattan(taxi_pos, s) for s in current_targets]
+            new_dists = [manhattan(new_taxi_pos, s) for s in current_targets]
+            if min(new_dists) < min(old_dists):
+                shaped_reward += 0.3'
+        """
+
+        new_picked_len = len(memory["picked_stations"])
+        new_dropped_len = len(memory["dropped_stations"])
+        if new_picked_len > prev_picked_len:
+            shaped_reward += 2
+        if new_dropped_len > prev_dropped_len:
+            shaped_reward += 2
+        prev_picked_len = new_picked_len
+        prev_dropped_len = new_dropped_len
+
+        taxi_pos = new_taxi_pos
 
         reward += shaped_reward
 
