@@ -4,12 +4,12 @@ from simple_custom_taxi_env import SimpleTaxiEnv
 import pickle
 
 # Training parameters
-episodes = 20000
+episodes = 100000
 alpha = 0.1
 gamma = 0.99
 epsilon = 1.0
 epsilon_end = 0.05
-decay_rate = 0.9999
+decay_rate = 0.99999
 
 env = SimpleTaxiEnv()
 q_table = {}
@@ -34,7 +34,6 @@ def get_state(obs, memory):
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
 
-    """
     if memory.get("previous_action") == 4 and phase == 0:
         for station in stations:
             if (taxi_row, taxi_col) == station:
@@ -42,16 +41,15 @@ def get_state(obs, memory):
     if memory.get("previous_action") == 5 and phase == 1:
         for station in stations:
             if (taxi_row, taxi_col) == station:
-                picked.add(station)'
-    """
+                picked.add(station)
 
     for s in stations:
-        if s in picked or (phase == 1 and s in dropped):
+        if (phase == 0 and s in picked) or (phase == 1 and s in dropped):
             continue
 
         sy, sx = s
         dist = abs(sy - taxi_row) + abs(sx - taxi_col)
-        if dist == 1:
+        if dist <= 1:
             if phase == 0 and passenger_look == 0:
                 picked.add(s)
             elif phase == 1 and destination_look == 0:
@@ -125,8 +123,11 @@ for episode in range(episodes):
 
         shaped_reward = 0
 
-        if action == 4 and reward > -1:
-            shaped_reward += 10
+        if action == 4 or action == 5:
+            if reward > -1:
+                shaped_reward += 50
+            else:
+                shaped_reward -= 50
 
         new_taxi_pos = (obs[0], obs[1])
         current_targets = [
