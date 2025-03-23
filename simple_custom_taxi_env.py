@@ -14,7 +14,7 @@ import random
 
 
 class SimpleTaxiEnv():
-    def __init__(self, grid_size=5, fuel_limit=50):
+    def __init__(self, grid_size=5, fuel_limit=50, num_obstacles=1):
         """
         Custom Taxi environment supporting different grid sizes.
         """
@@ -23,8 +23,11 @@ class SimpleTaxiEnv():
         self.current_fuel = fuel_limit
         self.passenger_picked_up = False
         
-        self.stations = [(0, 0), (0, self.grid_size - 1), (self.grid_size - 1, 0), (self.grid_size - 1, self.grid_size - 1)]
+        # self.stations = [(0, 0), (0, self.grid_size - 1), (self.grid_size - 1, 0), (self.grid_size - 1, self.grid_size - 1)]
+        self.station = []
         self.passenger_loc = None
+
+        self.num_obstacles = num_obstacles
        
         self.obstacles = set()  # No obstacles in simple version
         self.destination = None
@@ -34,6 +37,11 @@ class SimpleTaxiEnv():
         self.current_fuel = self.fuel_limit
         self.passenger_picked_up = False
         
+        all_positions = [(x, y) for x in range(self.grid_size) for y in range(self.grid_size)]
+        self.stations = random.sample(all_positions, 4)
+
+        available_for_obstacles = [pos for pos in all_positions if pos not in self.stations]
+        self.obstacles = set(random.sample(available_for_obstacles, self.num_obstacles))
 
         available_positions = [
             (x, y) for x in range(self.grid_size) for y in range(self.grid_size)
@@ -43,8 +51,6 @@ class SimpleTaxiEnv():
         self.taxi_pos = random.choice(available_positions)
         
         self.passenger_loc = random.choice([pos for pos in self.stations])
-        
-        
         possible_destinations = [s for s in self.stations if s != self.passenger_loc]
         self.destination = random.choice(possible_destinations)
         
@@ -88,6 +94,12 @@ class SimpleTaxiEnv():
                         reward -=10
                     self.passenger_picked_up = False
                     self.passenger_loc = self.taxi_pos
+                    '''
+                    self.passenger_loc = random.choice([pos for pos in self.stations])
+                    possible_destinations = [s for s in self.stations if s != self.passenger_loc]
+                    self.destination = random.choice(possible_destinations)
+                    '''
+
                 else:
                     reward -=10
                     
@@ -134,24 +146,34 @@ class SimpleTaxiEnv():
 
         grid = [['.'] * self.grid_size for _ in range(self.grid_size)]
         
-        '''
+        
+        
+        
+        station_labels = ['R', 'G', 'Y', 'B']
+        for i, (sy, sx) in enumerate(self.stations):
+            grid[sy][sx] = station_labels[i]
+        
         # Place passenger
-        py, px = passenger_pos
+        py, px = self.passenger_loc
         if 0 <= px < self.grid_size and 0 <= py < self.grid_size:
             grid[py][px] = 'P'
+        
         '''
-        
-        
         grid[0][0]='R'
         grid[0][4]='G'
         grid[4][0]='Y'
         grid[4][4]='B'
         '''
+        
         # Place destination
-        dy, dx = destination_pos
+        dy, dx = self.destination
         if 0 <= dx < self.grid_size and 0 <= dy < self.grid_size:
             grid[dy][dx] = 'D'
-        '''
+
+        # Place obstacles
+        for oy, ox in self.obstacles:
+            grid[oy][ox] = 'X'
+        
         # Place taxi
         ty, tx = taxi_pos
         if 0 <= tx < self.grid_size and 0 <= ty < self.grid_size:
@@ -160,8 +182,8 @@ class SimpleTaxiEnv():
         # Print step info
         print(f"\nStep: {step}")
         print(f"Taxi Position: ({tx}, {ty})")
-        #print(f"Passenger Position: ({px}, {py}) {'(In Taxi)' if (px, py) == (tx, ty) else ''}")
-        #print(f"Destination: ({dx}, {dy})")
+        print(f"Passenger Position: ({px}, {py}) {'(In Taxi)' if (px, py) == (tx, ty) else ''}")
+        print(f"Destination: ({dx}, {dy})")
         print(f"Fuel Left: {fuel}")
         print(f"Last Action: {self.get_action_name(action)}\n")
 
