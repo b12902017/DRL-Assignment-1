@@ -19,11 +19,11 @@ action_space = list(
 )  # 0: south, 1: north, 2: east, 3: west, 4: pickup, 5: dropoff
 
 
-def sign(x):
-    return (x > 0) - (x < 0)
-
-
 def get_state(obs, memory):
+
+    def sign(x):
+        return (x > 0) - (x < 0)
+
     taxi_row, taxi_col = obs[0], obs[1]
     obstacle_and_flags = obs[10:]
 

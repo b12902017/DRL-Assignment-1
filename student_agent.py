@@ -23,12 +23,9 @@ def get_state(obs, memory):
         return (x > 0) - (x < 0)
 
     taxi_row, taxi_col = obs[0], obs[1]
-    station_coords = obs[2:10]
     obstacle_and_flags = obs[10:]
 
-    stations = [(station_coords[i], station_coords[i + 1]) for i in range(0, 8, 2)]
-    memory["stations"] = stations
-
+    stations = memory.get("stations", [])
     phase = memory.get("phase", 0)
     picked = memory.get("picked_stations", set())
     dropped = memory.get("dropped_stations", set())
@@ -82,12 +79,15 @@ def get_action(obs):
     #       To prevent crashes, implement a fallback strategy for missing keys.
     #       Otherwise, even if your agent performs well in training, it may fail during testing.
 
+    station_coords = obs[2:10]
+    stations = [(station_coords[i], station_coords[i + 1]) for i in range(0, 8, 2)]
+
     if not hasattr(get_action, "memory"):
         get_action.memory = {
             "phase": 0,
             "picked_stations": set(),
             "dropped_stations": set(),
-            "stations": [],
+            "stations": stations,
         }
 
     memory = get_action.memory
