@@ -4,12 +4,12 @@ from simple_custom_taxi_env import SimpleTaxiEnv
 import pickle
 
 # Training parameters
-episodes = 40000
+episodes = 20000
 alpha = 0.1
 gamma = 0.99
 epsilon = 1.0
 epsilon_end = 0.05
-decay_rate = 0.99995
+decay_rate = 0.9999
 
 env = SimpleTaxiEnv()
 q_table = {}
@@ -34,6 +34,7 @@ def get_state(obs, memory):
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
 
+    """
     if memory.get("previous_action") == 4 and phase == 0:
         for station in stations:
             if (taxi_row, taxi_col) == station:
@@ -41,7 +42,8 @@ def get_state(obs, memory):
     if memory.get("previous_action") == 5 and phase == 1:
         for station in stations:
             if (taxi_row, taxi_col) == station:
-                picked.add(station)
+                picked.add(station)'
+    """
 
     for s in stations:
         if s in picked or (phase == 1 and s in dropped):
@@ -144,7 +146,7 @@ for episode in range(episodes):
             if min(new_dists) < min(old_dists):
                 shaped_reward += 0.3'
         """
-
+        """
         new_picked_len = len(memory["picked_stations"])
         new_dropped_len = len(memory["dropped_stations"])
         if new_picked_len > prev_picked_len:
@@ -153,6 +155,7 @@ for episode in range(episodes):
             shaped_reward += 2
         prev_picked_len = new_picked_len
         prev_dropped_len = new_dropped_len
+        """
 
         taxi_pos = new_taxi_pos
 
@@ -180,6 +183,12 @@ for episode in range(episodes):
         )
 
 # Save Q-table
+"""
 with open("q_table.pkl", "wb") as f:
     pickle.dump(q_table, f)
-print("Q-table saved to q_table.pkl")
+print("Q-table saved to q_table.pkl")'
+"""
+
+keys = list(q_table.keys())
+values = np.array(list(q_table.values()))
+np.savez_compressed("q_table.npz", keys=keys, values=values)
