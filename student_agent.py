@@ -6,7 +6,7 @@ import gym
 import pickle
 
 with open("q_table.pkl", "rb") as f:
-    q_table = pickle.load(f)
+    q_table = pickle.load(f, encoding="latin1")
 
 action_space = list(range(6))
 
