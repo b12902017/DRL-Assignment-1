@@ -5,10 +5,10 @@ import random
 import gym
 import pickle
 
-'''
+"""
 with open("q_table.pkl", "rb") as f:
     q_table = pickle.load(f)
-'''
+"""
 
 data = np.load("q_table.npz", allow_pickle=True)
 keys = data["keys"]
@@ -40,6 +40,7 @@ def get_state(obs, memory):
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
 
+    """
     if memory.get("previous_action") == 4 and phase == 0:
         for station in stations:
             if (taxi_row, taxi_col) == station:
@@ -47,7 +48,8 @@ def get_state(obs, memory):
     if memory.get("previous_action") == 5 and phase == 1:
         for station in stations:
             if (taxi_row, taxi_col) == station:
-                picked.add(station)
+                picked.add(station)'
+    """
 
     for s in stations:
         if s in picked or (phase == 1 and s in dropped):
