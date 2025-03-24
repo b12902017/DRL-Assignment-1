@@ -4,12 +4,12 @@ from simple_custom_taxi_env import SimpleTaxiEnv
 import pickle
 
 # Training parameters
-episodes = 100000
+episodes = 50000
 alpha = 0.1
 gamma = 0.99
 epsilon = 1.0
 epsilon_end = 0.05
-decay_rate = 0.99999
+decay_rate = 0.99995
 
 env = SimpleTaxiEnv()
 q_table = {}
@@ -79,7 +79,8 @@ def get_state(obs, memory):
         + list(obstacle_and_flags)
         + [memory["phase"]]
     )
-    return state
+
+    return obstacle_and_flags
 
 
 def manhattan(pos1, pos2):
@@ -123,13 +124,15 @@ for episode in range(episodes):
 
         shaped_reward = 0
 
-        if action == 4 or action == 5:
+        if reward <= -5:
+            shaped_reward -= 100
+
+        if action == 4:
             if reward > -1:
-                shaped_reward += 50
-            else:
-                shaped_reward -= 50
+                shaped_reward += 0
 
         new_taxi_pos = (obs[0], obs[1])
+        """
         current_targets = [
             s
             for s in stations
@@ -140,12 +143,12 @@ for episode in range(episodes):
             )
         ]
 
-        """
+        
         if current_targets:
             old_dists = [manhattan(taxi_pos, s) for s in current_targets]
             new_dists = [manhattan(new_taxi_pos, s) for s in current_targets]
             if min(new_dists) < min(old_dists):
-                shaped_reward += 0.3'
+                shaped_reward += 0.3
         """
         """
         new_picked_len = len(memory["picked_stations"])
@@ -160,7 +163,8 @@ for episode in range(episodes):
 
         taxi_pos = new_taxi_pos
 
-        reward += shaped_reward
+        if not done:
+            reward = shaped_reward
 
         total_reward += reward
         steps += 1

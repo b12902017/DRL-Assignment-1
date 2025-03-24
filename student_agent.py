@@ -40,7 +40,6 @@ def get_state(obs, memory):
     passenger_look = obstacle_and_flags[-2]
     destination_look = obstacle_and_flags[-1]
 
-    """
     if memory.get("previous_action") == 4 and phase == 0:
         for station in stations:
             if (taxi_row, taxi_col) == station:
@@ -48,16 +47,15 @@ def get_state(obs, memory):
     if memory.get("previous_action") == 5 and phase == 1:
         for station in stations:
             if (taxi_row, taxi_col) == station:
-                picked.add(station)'
-    """
+                picked.add(station)
 
     for s in stations:
-        if s in picked or (phase == 1 and s in dropped):
+        if (phase == 0 and s in picked) or (phase == 1 and s in dropped):
             continue
 
         sy, sx = s
         dist = abs(sy - taxi_row) + abs(sx - taxi_col)
-        if dist == 1:
+        if dist <= 1:
             if phase == 0 and passenger_look == 0:
                 picked.add(s)
             elif phase == 1 and destination_look == 0:
@@ -87,7 +85,8 @@ def get_state(obs, memory):
         + list(obstacle_and_flags)
         + [memory["phase"]]
     )
-    return state
+
+    return obstacle_and_flags
 
 
 def get_action(obs):
@@ -117,6 +116,9 @@ def get_action(obs):
         action = int(np.argmax(q_table[state]))
     else:
         action = random.choice(range(6))
+
+    print(f"State: {state}")
+    print(f"Action: {action}")
 
     memory["previous_action"] = action
     return action
