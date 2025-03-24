@@ -7,7 +7,6 @@ import pickle
 import json
 
 
-
 with open("q_table.pkl", "rb") as f:
     q_table = pickle.load(f)
 
@@ -93,7 +92,7 @@ def get_state(obs, memory):
         + [memory["phase"]]
     )
 
-    return state
+    return obstacle_and_flags
 
 
 def get_action(obs):

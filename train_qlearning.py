@@ -84,7 +84,7 @@ def get_state(obs, memory):
         + [memory["phase"]]
     )
 
-    return state
+    return obstacle_and_flags
 
 
 def manhattan(pos1, pos2):
@@ -143,10 +143,10 @@ for episode in range(episodes):
 
         if action == 4:
             if reward > -1:
-                shaped_reward += 10
+                shaped_reward += 0
 
         new_taxi_pos = (obs[0], obs[1])
-
+        """
         target = nearest_target(
             taxi_pos,
             stations,
@@ -170,7 +170,7 @@ for episode in range(episodes):
         prev_dropped_len = new_dropped_len
 
         taxi_pos = new_taxi_pos
-
+        """
         if not done:
             reward = shaped_reward
 
