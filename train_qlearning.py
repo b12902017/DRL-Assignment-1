@@ -196,12 +196,14 @@ for episode in range(episodes):
         )
 
 # Save Q-table
-"""
+
+non_numpy_q_table = {k: v.tolist() for k, v in q_table.items()}
 with open("q_table.pkl", "wb") as f:
     pickle.dump(q_table, f)
-print("Q-table saved to q_table.pkl")'
-"""
+print("Q-table saved to q_table.pkl")
 
+"""
 keys = list(q_table.keys())
 values = np.array(list(q_table.values()))
-np.savez_compressed("q_table.npz", keys=keys, values=values)
+np.savez_compressed("q_table.npz", keys=keys, values=values)"
+"""

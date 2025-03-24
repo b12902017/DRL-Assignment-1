@@ -7,16 +7,17 @@ import pickle
 import json
 
 
-"""
+
 with open("q_table.pkl", "rb") as f:
     q_table = pickle.load(f)
-"""
 
+"""
 data = np.load("q_table.npz", allow_pickle=True)
 keys = data["keys"]
 values = data["values"]
 
 q_table = {tuple(k): v for k, v in zip(keys, values)}
+"""
 
 action_space = list(range(6))
 
