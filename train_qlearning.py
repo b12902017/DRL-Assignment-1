@@ -143,7 +143,7 @@ for episode in range(episodes):
 
         if action == 4:
             if reward > -1:
-                shaped_reward += 0
+                shaped_reward += 10
 
         new_taxi_pos = (obs[0], obs[1])
 
