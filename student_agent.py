@@ -4,6 +4,8 @@ import pickle
 import random
 import gym
 import pickle
+import json
+
 
 """
 with open("q_table.pkl", "rb") as f:
