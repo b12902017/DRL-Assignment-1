@@ -199,7 +199,7 @@ for episode in range(episodes):
 
 non_numpy_q_table = {k: v.tolist() for k, v in q_table.items()}
 with open("q_table.pkl", "wb") as f:
-    pickle.dump(q_table, f)
+    pickle.dump(non_numpy_q_table, f)
 print("Q-table saved to q_table.pkl")
 
 """
