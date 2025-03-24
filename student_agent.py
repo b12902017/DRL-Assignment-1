@@ -60,20 +60,24 @@ def get_state(obs, memory):
                 picked.add(s)
             elif phase == 1 and destination_look == 0:
                 dropped.add(s)
+        if dist > 1:
+            if phase == 0 and passenger_look == 1:
+                picked.add(s)
+            elif phase == 1 and destination_look == 1:
+                dropped.add(s)
 
     if phase == 0 and len(picked) == 4:
         memory["phase"] = 1
         memory["dropped_stations"] = set()
-    else:
-        memory["phase"] = phase
-
-    memory["picked_stations"] = picked
 
     rel_dirs = []
     for s in stations:
         dy = sign(s[0] - taxi_row)
         dx = sign(s[1] - taxi_col)
-        rel_dirs.extend([dy, dx])
+        if (phase == 0 and s in picked) or (phase == 1 and s in dropped):
+            rel_dirs.extend([None, None])
+        else:
+            rel_dirs.extend([dy, dx])
 
     picked_flags = [int(s in picked) for s in stations] if phase == 0 else [0] * 4
     dropped_flags = [int(s in dropped) for s in stations] if phase == 1 else [0] * 4
@@ -86,7 +90,7 @@ def get_state(obs, memory):
         + [memory["phase"]]
     )
 
-    return obstacle_and_flags
+    return state
 
 
 def get_action(obs):

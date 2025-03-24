@@ -54,20 +54,24 @@ def get_state(obs, memory):
                 picked.add(s)
             elif phase == 1 and destination_look == 0:
                 dropped.add(s)
+        if dist > 1:
+            if phase == 0 and passenger_look == 1:
+                picked.add(s)
+            elif phase == 1 and destination_look == 1:
+                dropped.add(s)
 
     if phase == 0 and len(picked) == 4:
         memory["phase"] = 1
         memory["dropped_stations"] = set()
-    else:
-        memory["phase"] = phase
-
-    memory["picked_stations"] = picked
 
     rel_dirs = []
     for s in stations:
         dy = sign(s[0] - taxi_row)
         dx = sign(s[1] - taxi_col)
-        rel_dirs.extend([dy, dx])
+        if (phase == 0 and s in picked) or (phase == 1 and s in dropped):
+            rel_dirs.extend([None, None])
+        else:
+            rel_dirs.extend([dy, dx])
 
     picked_flags = [int(s in picked) for s in stations] if phase == 0 else [0] * 4
     dropped_flags = [int(s in dropped) for s in stations] if phase == 1 else [0] * 4
@@ -80,11 +84,21 @@ def get_state(obs, memory):
         + [memory["phase"]]
     )
 
-    return obstacle_and_flags
+    return state
 
 
 def manhattan(pos1, pos2):
     return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+
+
+def nearest_target(taxi_pos, stations, picked, dropped, phase):
+    if phase == 0:
+        targets = [s for s in stations if s not in picked]
+    else:
+        targets = [s for s in stations if s not in dropped]
+    if not targets:
+        return None
+    return min(targets, key=lambda s: manhattan(taxi_pos, s))
 
 
 for episode in range(episodes):
@@ -132,25 +146,20 @@ for episode in range(episodes):
                 shaped_reward += 0
 
         new_taxi_pos = (obs[0], obs[1])
-        """
-        current_targets = [
-            s
-            for s in stations
-            if (
-                s not in memory["picked_stations"]
-                if memory["phase"] == 0
-                else s not in memory["dropped_stations"]
-            )
-        ]
 
-        
-        if current_targets:
-            old_dists = [manhattan(taxi_pos, s) for s in current_targets]
-            new_dists = [manhattan(new_taxi_pos, s) for s in current_targets]
-            if min(new_dists) < min(old_dists):
-                shaped_reward += 0.3
-        """
-        """
+        target = nearest_target(
+            taxi_pos,
+            stations,
+            memory["picked_stations"],
+            memory["dropped_stations"],
+            memory["phase"],
+        )
+
+        if target:
+            old_dist = manhattan(taxi_pos, target)
+            new_dist = manhattan(new_taxi_pos, target)
+            shaped_reward += 0.3 * (old_dist - new_dist)
+
         new_picked_len = len(memory["picked_stations"])
         new_dropped_len = len(memory["dropped_stations"])
         if new_picked_len > prev_picked_len:
@@ -159,7 +168,6 @@ for episode in range(episodes):
             shaped_reward += 2
         prev_picked_len = new_picked_len
         prev_dropped_len = new_dropped_len
-        """
 
         taxi_pos = new_taxi_pos
 
